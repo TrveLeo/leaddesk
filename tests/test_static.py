@@ -3,9 +3,9 @@
 from main import STATIC_DIR
 
 
-def test_a_raiz_avisa_quando_a_interface_ainda_nao_existe(client):
-    if (STATIC_DIR / "index.html").is_file():
-        return  # interface já construída — coberto pelo teste abaixo
+def test_a_raiz_avisa_quando_a_interface_ainda_nao_existe(client, monkeypatch, tmp_path):
+    """Aponta para /docs em vez de dar erro seco — vale para um clone recém-feito."""
+    monkeypatch.setattr("main.STATIC_DIR", tmp_path)
 
     r = client.get("/")
 
@@ -13,7 +13,7 @@ def test_a_raiz_avisa_quando_a_interface_ainda_nao_existe(client):
     assert r.json()["api"] == "/docs"
 
 
-def test_a_raiz_serve_o_index_quando_ele_existe(client, tmp_path, monkeypatch):
+def test_a_raiz_serve_o_index_quando_ele_existe(client):
     pagina = STATIC_DIR / "index.html"
     ja_existia = pagina.is_file()
     if not ja_existia:
