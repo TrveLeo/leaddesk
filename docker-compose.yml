@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: leaddesk
+      POSTGRES_PASSWORD: leaddesk
+      POSTGRES_DB: leaddesk
+    # 5434 no host: 5432 costuma ter um Postgres local e 5433 é do ConciliaFlow.
+    ports:
+      - "5434:5432"
+    volumes:
+      - leaddesk_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U leaddesk"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg2://leaddesk:leaddesk@db:5432/leaddesk
+    # 8001 no host: a 8000 costuma estar ocupada por outro serviço local.
+    ports:
+      - "8001:8000"
+
+volumes:
+  leaddesk_pgdata:
