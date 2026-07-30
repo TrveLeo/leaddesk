@@ -39,15 +39,17 @@ from sqlalchemy.orm import Session  # noqa: E402
 from crm.database import Base, SessionLocal, engine  # noqa: E402
 from prospecting.models import Prospect, ProspectSource, ProspectStatus, Segment  # noqa: E402
 
-CAMPOS_TEXTO = (
-    "size_estimate",
-    "contact_name",
-    "phone",
-    "email",
-    "linkedin_url",
-    "signals",
-    "notes",
-)
+# Limite de cada coluna em `prospecting/models.py`. `signals` e `notes` são
+# Text e não truncam.
+CAMPOS_TEXTO = {
+    "size_estimate": 20,
+    "contact_name": 200,
+    "phone": 30,
+    "email": 200,
+    "linkedin_url": 500,
+    "signals": None,
+    "notes": None,
+}
 
 
 @dataclass
@@ -64,6 +66,21 @@ class Resultado:
 def segunda_da_semana(referencia: date | None = None) -> date:
     hoje = referencia or date.today()
     return hoje - timedelta(days=hoje.weekday())
+
+
+def _encurtar(valor: str, limite: int | None) -> str:
+    """Ajusta o valor ao tamanho da coluna.
+
+    Fonte de pesquisa é suja: o OpenStreetMap guarda vários telefones no mesmo
+    campo, separados por `;`, e uma linha de 35 caracteres derruba a carga
+    inteira num `phone` de 30. Fica o primeiro valor — os demais viram trabalho
+    de qualificação, não motivo para perder as outras 26 empresas.
+    """
+    if limite is None:
+        return valor
+    if ";" in valor:
+        valor = valor.split(";")[0].strip()
+    return valor[:limite]
 
 
 def _enum_ou_padrao(bruto: str, enum, padrao):
@@ -108,10 +125,10 @@ def importar(
             "status": ProspectStatus.pesquisando,
             "week": semana,
         }
-        for campo in CAMPOS_TEXTO:
+        for campo, limite in CAMPOS_TEXTO.items():
             valor = (linha.get(campo) or "").strip()
             if valor:
-                dados[campo] = valor
+                dados[campo] = _encurtar(valor, limite)
 
         semana_da_linha = (linha.get("week") or "").strip()
         if semana_da_linha:
@@ -121,9 +138,12 @@ def importar(
                 resultado.ignorados.append((numero, f"week invalida: {semana_da_linha}"))
                 continue
 
-        if not dry_run:
-            db.add(Prospect(**dados))
+        db.add(Prospect(**dados))
         resultado.importados.append(nome)
+
+    # O `flush` roda mesmo em simulação: sem ele o dry-run não vê violação de
+    # constraint e diz "27 importados" para uma carga que quebra no commit.
+    db.flush()
 
     if dry_run:
         db.rollback()

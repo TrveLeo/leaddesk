@@ -211,6 +211,58 @@ def test_o_total_soma_as_tres_categorias(db, make_prospect):
     assert resultado.total == 3
 
 
+def test_telefone_com_varios_numeros_fica_com_o_primeiro(db):
+    """O OSM guarda vários telefones no mesmo campo, separados por `;`."""
+    importar(
+        db,
+        [{"company_name": "Maia", "phone": "+55 28 3537 1333; +55 28 3537 1004"}],
+        semana=SEMANA,
+    )
+
+    assert db.query(Prospect).one().phone == "+55 28 3537 1333"
+
+
+def test_campo_longo_demais_e_truncado_em_vez_de_derrubar_a_carga(db):
+    resultado = importar(
+        db,
+        [
+            {"company_name": "Longa", "phone": "9" * 60},
+            {"company_name": "Seguinte"},
+        ],
+        semana=SEMANA,
+    )
+
+    assert len(resultado.importados) == 2  # a segunda não se perde
+    assert len(db.query(Prospect).filter(Prospect.company_name == "Longa").one().phone) == 30
+
+
+def test_size_estimate_respeita_o_limite_da_coluna(db):
+    importar(db, [{"company_name": "Empresa", "size_estimate": "x" * 40}], semana=SEMANA)
+
+    assert len(db.query(Prospect).one().size_estimate) == 20
+
+
+def test_signals_e_notes_nao_truncam(db):
+    texto = "sinal muito longo. " * 40
+
+    importar(db, [{"company_name": "Empresa", "signals": texto}], semana=SEMANA)
+
+    assert db.query(Prospect).one().signals == texto.strip()
+
+
+def test_dry_run_valida_contra_o_banco_de_verdade(db):
+    """Sem `flush`, a simulação aprova carga que quebra no commit."""
+    resultado = importar(
+        db,
+        [{"company_name": "Empresa", "phone": "9" * 60}],
+        semana=SEMANA,
+        dry_run=True,
+    )
+
+    assert resultado.importados == ["Empresa"]
+    assert db.query(Prospect).count() == 0
+
+
 def test_a_semana_e_sempre_normalizada_para_segunda():
     assert segunda_da_semana(date(2026, 8, 5)).weekday() == 0  # quarta -> segunda
     assert segunda_da_semana(date(2026, 8, 3)) == date(2026, 8, 3)  # já é segunda
