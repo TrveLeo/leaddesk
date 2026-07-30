@@ -7,8 +7,11 @@ Uma única aplicação FastAPI expõe os dois módulos:
 """
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from crm.database import Base, engine
 from crm.jobs import followup_job
@@ -49,3 +52,27 @@ def run_followup_now():
     """Dispara o job de follow-up manualmente, fora do horário agendado."""
     followup_job()
     return {"status": "executado"}
+
+
+# --- interface web -----------------------------------------------------------
+# HTML/CSS/JS sem build, servido pela própria API. Montado depois dos routers,
+# então nenhuma rota de negócio é sombreada por um arquivo de mesmo nome.
+
+STATIC_DIR = Path(__file__).parent / "static"
+STATIC_DIR.mkdir(exist_ok=True)
+
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+
+@app.get("/", include_in_schema=False)
+def index():
+    pagina = STATIC_DIR / "index.html"
+    if not pagina.is_file():
+        return JSONResponse(
+            status_code=404,
+            content={
+                "detail": "Interface ainda não construída.",
+                "api": "/docs",
+            },
+        )
+    return FileResponse(pagina)

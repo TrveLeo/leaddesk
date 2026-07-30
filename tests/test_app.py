@@ -21,13 +21,17 @@ def test_os_dois_modulos_estao_montados_na_mesma_app():
     assert "/prospects/" in rotas
 
 
+IGNORADAS = ("/openapi", "/docs", "/redoc", "/static")
+
+
 def _rotas_publicas() -> set[tuple[str, str]]:
+    """Rotas de negócio e de infra — fora a documentação e a interface web."""
     return {
         (rota.path, metodo)
         for rota in app.routes
         if hasattr(rota, "methods")
         for metodo in rota.methods
-        if metodo != "HEAD" and not rota.path.startswith(("/openapi", "/docs", "/redoc"))
+        if metodo != "HEAD" and rota.path != "/" and not rota.path.startswith(IGNORADAS)
     }
 
 
