@@ -108,6 +108,8 @@ def discard_prospect(prospect_id: int, reason: str = "", db: Session = Depends(g
     prospect = db.get(Prospect, prospect_id)
     if not prospect:
         raise HTTPException(status_code=404, detail="Prospect não encontrado")
+    if prospect.status == ProspectStatus.convertido:
+        raise HTTPException(status_code=400, detail="Prospect já convertido em lead")
     prospect.status = ProspectStatus.descartado
     prospect.discard_reason = reason
     db.commit()

@@ -130,16 +130,29 @@ def test_o_lead_id_gravado_encontra_mesmo_o_lead(client, make_prospect):
     assert r.json()["company_name"] == "Contabilidade Horizonte"
 
 
-def test_descartar_depois_de_converter_nao_apaga_o_lead(client, make_prospect, db):
-    """O endpoint de descarte não bloqueia convertidos — mas o lead no CRM não é tocado."""
+def test_descartar_depois_de_converter_devolve_400(client, make_prospect):
+    """Simetria com `/contact`: convertido é estado final, não se desfaz por descarte."""
+    prospect = make_prospect()
+    client.post(f"/prospects/{prospect.id}/convert", json=CONTATO)
+
+    r = client.post(f"/prospects/{prospect.id}/discard", params={"reason": "Enganei-me"})
+
+    assert r.status_code == 400
+    assert r.json()["detail"] == "Prospect já convertido em lead"
+
+
+def test_descarte_recusado_nao_mexe_no_prospect_nem_no_lead(client, make_prospect, db):
     prospect = make_prospect()
     client.post(f"/prospects/{prospect.id}/convert", json=CONTATO)
 
     client.post(f"/prospects/{prospect.id}/discard", params={"reason": "Enganei-me"})
 
-    assert db.query(Lead).count() == 1
     db.expire_all()
-    assert db.get(Prospect, prospect.id).lead_id is not None
+    depois = db.get(Prospect, prospect.id)
+    assert depois.status == ProspectStatus.convertido
+    assert depois.discard_reason is None
+    assert depois.lead_id is not None
+    assert db.query(Lead).count() == 1
 
 
 @pytest.mark.parametrize(

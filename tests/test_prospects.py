@@ -199,6 +199,36 @@ def test_descartar_prospect_inexistente_devolve_404(client):
     assert client.post("/prospects/9999/discard").status_code == 404
 
 
+def test_descartar_prospect_ja_convertido_devolve_400(client, make_prospect):
+    prospect = make_prospect(status=ProspectStatus.convertido)
+
+    r = client.post(f"/prospects/{prospect.id}/discard", params={"reason": "tarde demais"})
+
+    assert r.status_code == 400
+    assert r.json()["detail"] == "Prospect já convertido em lead"
+
+
+def test_descartar_e_contactar_recusam_convertido_com_a_mesma_resposta(client, make_prospect):
+    """As duas transições tratam `convertido` como estado final, do mesmo jeito."""
+    prospect = make_prospect(status=ProspectStatus.convertido)
+
+    descarte = client.post(f"/prospects/{prospect.id}/discard")
+    contato = client.post(f"/prospects/{prospect.id}/contact")
+
+    assert descarte.status_code == contato.status_code == 400
+    assert descarte.json()["detail"] == contato.json()["detail"]
+
+
+def test_prospect_descartado_ainda_pode_ser_descartado_de_novo(client, make_prospect):
+    """Só `convertido` é terminal — redescartar com outro motivo é corrigir registro."""
+    prospect = make_prospect(status=ProspectStatus.descartado, discard_reason="motivo antigo")
+
+    r = client.post(f"/prospects/{prospect.id}/discard", params={"reason": "motivo correto"})
+
+    assert r.status_code == 200
+    assert r.json()["discard_reason"] == "motivo correto"
+
+
 def test_metricas_da_semana_sem_prospects_vem_zeradas(client, monday):
     body = client.get("/prospects/week/stats").json()
 
