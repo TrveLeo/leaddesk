@@ -1,0 +1,25 @@
+# Blueprint do Render — https://render.com/docs/blueprint-spec
+#
+# O banco NÃO é declarado aqui de propósito. O Postgres gratuito do Render
+# expira em 30 dias e leva a demonstração junto; o Neon tem tier gratuito sem
+# prazo. Então `DATABASE_URL` entra como segredo apontando para o Neon.
+#
+# Use o endpoint *pooled* do Neon (o host com `-pooler`): a aplicação abre uma
+# conexão por request e o endpoint direto estoura o limite.
+
+services:
+  - type: web
+    name: leaddesk
+    runtime: docker
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      # Definir no painel. Não versionar: é credencial de banco.
+      - key: DATABASE_URL
+        sync: false
+      # Sem token o job de follow-up só escreve no log — que é o que se quer
+      # numa demonstração pública.
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
