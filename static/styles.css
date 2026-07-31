@@ -8,43 +8,52 @@
    institucional. Não codifica dado nenhum, então não passa pelos
    portões de paleta categórica.
 
-   SÉRIE (dado)   — as três cores dos gráficos. Validadas contra o
-   fundo branco: banda de luminosidade, piso de croma, separação para
-   daltonismo, piso de visão normal e contraste >= 3:1, todos passando.
-   Trocar qualquer uma exige revalidar o conjunto inteiro.
+   SÉRIE (dado)   — as três cores dos gráficos. Validadas contra a
+   superfície escura real (#16201c): banda de luminosidade, piso de
+   croma, separação para daltonismo, piso de visão normal e contraste
+   >= 3:1, todos passando. Trocar qualquer uma exige revalidar o
+   conjunto inteiro.
 
-   O verde de série (#00713c) fica perto do verde de status e do verde
-   de delta positivo. É por isso que status sempre vem com ícone e
-   rótulo, e delta sempre vem com seta e número — a cor nunca carrega
-   o significado sozinha.
+   O tema escuro não é o claro invertido. A banda de luminosidade do
+   modo escuro (L 0.48–0.67) é mais estreita que a do claro
+   (0.43–0.77), então as três cores foram re-escalonadas, não
+   clareadas por filtro: o laranja do tema claro (#eb6834) media L
+   0.671 e reprovava por um fio.
+
+   O verde de série fica perto do verde de status e do de delta
+   positivo. É por isso que status sempre vem com ícone e rótulo, e
+   delta sempre vem com seta e número — a cor nunca carrega o
+   significado sozinha.
    ========================================================= */
 
 :root {
+  color-scheme: dark;
+
   /* --- cromo --- */
-  --header: #14231d;
-  --tab: #1f5138;
-  --tab-hover: #2a6b4a;
-  --page: #f9f9f7;
-  --surface: #ffffff;
-  --surface-sunken: #f4f4f1;
-  --border: rgba(11, 11, 11, 0.1);
-  --border-strong: rgba(11, 11, 11, 0.18);
+  --header: #0a100d;
+  --tab: #226b47;
+  --tab-hover: #2b8055;
+  --page: #0d1411;
+  --surface: #16201c;
+  --surface-sunken: #1d2924;
+  --border: rgba(255, 255, 255, 0.11);
+  --border-strong: rgba(255, 255, 255, 0.22);
 
   /* --- tinta --- */
-  --ink: #0b0b0b;
-  --ink-2: #52514e;
-  --ink-muted: #898781;
+  --ink: #ffffff;
+  --ink-2: #c3c2b7;
+  --ink-muted: #8d9791;
   --ink-on-dark: #ffffff;
   --ink-on-dark-2: #c3c2b7;
 
   /* --- eixos e grade (recessivos) --- */
-  --grid: #e1e0d9;
-  --axis: #c3c2b7;
+  --grid: #263029;
+  --axis: #3b4a41;
 
-  /* --- séries (validadas — ver cabeçalho) --- */
-  --s1: #00713c;
-  --s2: #eb6834;
-  --s3: #2a78d6;
+  /* --- séries (validadas contra #16201c — ver cabeçalho) --- */
+  --s1: #199e70;
+  --s2: #d95926;
+  --s3: #3987e5;
 
   /* --- status (fixos, nunca tematizados) --- */
   --good: #0ca30c;
@@ -52,8 +61,8 @@
   --critical: #d03b3b;
 
   /* --- delta --- */
-  --delta-up: #006300;
-  --delta-down: #d03b3b;
+  --delta-up: #0ca30c;
+  --delta-down: #e05c5c;
 
   --radius: 8px;
   --radius-sm: 5px;
@@ -90,6 +99,10 @@ textarea {
    HEADER
    ========================================================= */
 
+/* No tema claro o header quase preto se destacava sozinho contra a página
+   branca. No escuro ele mede 1.03:1 contra o plano da página — invisível como
+   barra. A borda é o que devolve a separação; escurecer mais não resolveria,
+   porque o problema é a razão entre os dois, não o valor absoluto. */
 .topbar {
   background: var(--header);
   color: var(--ink-on-dark);
@@ -98,6 +111,7 @@ textarea {
   align-items: center;
   gap: 24px;
   flex-wrap: wrap;
+  border-bottom: 1px solid var(--border-strong);
 }
 
 .brand {
@@ -135,7 +149,7 @@ textarea {
   flex-wrap: wrap;
 }
 
-/* controle em pílula branca sobre o header escuro */
+/* controle sobre o header, um degrau acima dele em luminosidade */
 .pill {
   background: var(--surface);
   border: 1px solid var(--border-strong);
@@ -167,7 +181,7 @@ textarea {
 
 .pill:focus-within {
   border-color: var(--tab);
-  box-shadow: 0 0 0 3px rgba(31, 81, 56, 0.25);
+  box-shadow: 0 0 0 3px rgba(34, 107, 71, 0.45);
 }
 
 .topbar__button {
@@ -413,7 +427,8 @@ textarea {
 .tooltip {
   position: fixed;
   z-index: 40;
-  background: var(--header);
+  background: #050a08;
+  border: 1px solid var(--border-strong);
   color: var(--ink-on-dark);
   border-radius: var(--radius-sm);
   padding: 8px 11px;
@@ -642,21 +657,21 @@ textarea {
 }
 
 .badge--good {
-  color: #05620a;
-  background: #e6f6e6;
-  border-color: rgba(12, 163, 12, 0.35);
+  color: #6ee06e;
+  background: rgba(12, 163, 12, 0.16);
+  border-color: rgba(12, 163, 12, 0.42);
 }
 
 .badge--warning {
-  color: #6b4a00;
-  background: #fdf3dd;
-  border-color: rgba(250, 178, 25, 0.45);
+  color: #fac95f;
+  background: rgba(250, 178, 25, 0.15);
+  border-color: rgba(250, 178, 25, 0.42);
 }
 
 .badge--critical {
-  color: #8d1f1f;
-  background: #fbe7e7;
-  border-color: rgba(208, 59, 59, 0.35);
+  color: #ff9494;
+  background: rgba(208, 59, 59, 0.17);
+  border-color: rgba(208, 59, 59, 0.45);
 }
 
 .badge__icon {
@@ -841,7 +856,7 @@ textarea {
 .form textarea:focus {
   outline: none;
   border-color: var(--tab);
-  box-shadow: 0 0 0 3px rgba(31, 81, 56, 0.15);
+  box-shadow: 0 0 0 3px rgba(34, 107, 71, 0.35);
 }
 
 .form input:disabled {
