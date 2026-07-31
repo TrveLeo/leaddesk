@@ -261,3 +261,44 @@ def test_as_semanas_terminam_na_semana_corrente(semeado, db):
 
     assert semanas[-1] == segunda_de_hoje
     assert semanas[0] == segunda_de_hoje - timedelta(weeks=5)
+
+
+def test_as_cotas_variam_entre_as_semanas(semeado, db):
+    """O painel de evolução do dashboard precisa de movimento para dizer algo.
+
+    Cotas idênticas nas seis semanas produziam duas retas no gráfico de
+    histórico. A progressão plantada é a de uma operação que aprende: descarte
+    caindo, qualificação e conversão subindo. Os números aqui são os do
+    `demo/GABARITO.md`.
+    """
+    semanas = sorted(w for (w,) in db.query(Prospect.week).distinct())
+
+    def por_semana(status):
+        return [
+            db.query(Prospect)
+            .filter(Prospect.week == semana, Prospect.status == status)
+            .count()
+            for semana in semanas
+        ]
+
+    assert por_semana(ProspectStatus.convertido) == [2, 2, 3, 3, 4, 4]
+    assert por_semana(ProspectStatus.descartado) == [6, 6, 5, 5, 4, 4]
+    assert por_semana(ProspectStatus.qualificado) == [2, 2, 3, 3, 4, 4]
+    assert por_semana(ProspectStatus.contactado) == [8, 8, 7, 7, 6, 6]
+    assert por_semana(ProspectStatus.pesquisando) == [2, 2, 2, 2, 2, 2]
+
+
+def test_a_meta_de_contatos_e_o_unico_valor_fixo_entre_semanas(semeado, db):
+    """O que não pode variar: `contactado + convertido` bate a meta toda semana."""
+    semanas = sorted(w for (w,) in db.query(Prospect.week).distinct())
+
+    for semana in semanas:
+        contatados = (
+            db.query(Prospect)
+            .filter(
+                Prospect.week == semana,
+                Prospect.status.in_([ProspectStatus.contactado, ProspectStatus.convertido]),
+            )
+            .count()
+        )
+        assert contatados == seed_demo.META_CONTATOS

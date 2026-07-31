@@ -3,181 +3,113 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LeadDesk</title>
+    <title>LeadDesk — pipeline comercial</title>
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
-    <div class="app-shell">
-      <aside class="sidebar">
-        <div class="brand">
-          <span class="brand__mark">LD</span>
-          <div>
-            <p class="brand__eyebrow">Pipeline comercial</p>
-            <strong class="brand__name">LeadDesk</strong>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">LD</span>
+        <span class="brand__name">LeadDesk</span>
+      </div>
+
+      <div class="topbar__controls">
+        <label class="pill" for="lead-search">
+          <span>Busca</span>
+          <input id="lead-search" type="search" placeholder="Empresa ou contato" autocomplete="off" />
+        </label>
+
+        <label class="pill" for="week-select">
+          <span>Semana</span>
+          <select id="week-select"></select>
+        </label>
+
+        <button class="topbar__button" id="refresh-all" type="button">Atualizar</button>
+      </div>
+    </header>
+
+    <main class="page">
+      <p class="sr-only" id="dashboard-status" aria-live="polite">Carregando dados.</p>
+
+      <!-- ================= KPI ================= -->
+      <section class="kpi-row" aria-label="Indicadores">
+        <button class="kpi" type="button" data-focus="all" aria-pressed="false">
+          <span class="kpi__label">Leads ativos</span>
+          <strong class="kpi__value" id="stat-leads">--</strong>
+          <span class="kpi__delta" id="stat-leads-delta">--</span>
+        </button>
+
+        <button class="kpi" type="button" data-focus="urgent" aria-pressed="false">
+          <span class="kpi__label">Ações na janela</span>
+          <strong class="kpi__value" id="stat-followups">--</strong>
+          <span class="kpi__delta" id="stat-followups-delta">--</span>
+        </button>
+
+        <button class="kpi" type="button" data-focus="rich" aria-pressed="false">
+          <span class="kpi__label">Interações registradas</span>
+          <strong class="kpi__value" id="stat-interactions">--</strong>
+          <span class="kpi__delta" id="stat-interactions-delta">--</span>
+        </button>
+
+        <button class="kpi" type="button" data-focus="converted" aria-pressed="false">
+          <span class="kpi__label">Prospects convertidos</span>
+          <strong class="kpi__value" id="stat-converted">--</strong>
+          <span class="kpi__delta" id="stat-converted-delta">--</span>
+        </button>
+
+        <button class="kpi" type="button" data-focus="no_date" aria-pressed="false">
+          <span class="kpi__label">Taxa de conversão</span>
+          <strong class="kpi__value" id="stat-rate">--</strong>
+          <span class="kpi__delta" id="stat-rate-delta">--</span>
+        </button>
+      </section>
+
+      <!-- ================= GRÁFICOS ================= -->
+      <section class="grid grid--3">
+        <article class="panel">
+          <h2 class="panel__tab">Leads por etapa</h2>
+          <div class="panel__body">
+            <p class="panel__meta" id="stage-chart-meta">--</p>
+            <div id="stage-chart"></div>
+            <button class="table-toggle" type="button" data-table="stage-table" aria-expanded="false">
+              Ver como tabela
+            </button>
+            <div id="stage-table" hidden></div>
           </div>
-        </div>
+        </article>
 
-        <nav class="sidebar-nav" aria-label="Áreas do dashboard">
-          <button class="nav-item is-active" type="button" data-target="secao-visao-geral">Visão geral</button>
-          <button class="nav-item" type="button" data-target="secao-pipeline">Pipeline</button>
-          <button class="nav-item" type="button" data-target="secao-lead">Leads</button>
-          <button class="nav-item" type="button" data-target="secao-prospeccao">Prospecção</button>
-          <button class="nav-item" type="button" data-target="secao-conversao">Conversões</button>
-          <button class="nav-item" type="button" data-target="secao-relatorios">Relatórios</button>
-        </nav>
-
-        <section class="sidebar-card">
-          <p class="sidebar-card__eyebrow">Status da operação</p>
-          <strong class="sidebar-card__title">Dados fictícios, rotina plausível</strong>
-          <p class="sidebar-card__text">
-            A demo nasce alimentada para que a tela pareça um CRM em uso de verdade:
-            pipeline cheio, histórico por etapa e prospecção batendo meta.
-          </p>
-        </section>
-
-        <section class="sidebar-card">
-          <p class="sidebar-card__eyebrow">Ações rápidas</p>
-          <div class="action-list">
-            <button class="sidebar-action" data-action="exportar" type="button">Exportar visão</button>
-            <button class="sidebar-action" data-action="investigar" type="button">Investigar gargalo</button>
-            <button class="sidebar-action" data-action="comparar" type="button">Comparar semanas</button>
+        <article class="panel">
+          <h2 class="panel__tab">Prospecção na semana</h2>
+          <div class="panel__body">
+            <p class="panel__meta" id="week-chart-meta">--</p>
+            <div id="week-chart"></div>
+            <button class="table-toggle" type="button" data-table="week-table" aria-expanded="false">
+              Ver como tabela
+            </button>
+            <div id="week-table" hidden></div>
           </div>
-        </section>
-      </aside>
+        </article>
 
-      <main class="main">
-        <header class="topbar">
-          <div class="topbar__copy">
-            <p class="breadcrumbs">Comercial / Operação / Dashboard</p>
-            <h1>Visão editorial do funil comercial</h1>
-            <p class="topbar__text" id="executive-summary">
-              Carregando leitura executiva do pipeline...
-            </p>
+        <article class="panel">
+          <h2 class="panel__tab">Seis semanas de operação</h2>
+          <div class="panel__body">
+            <p class="panel__meta" id="history-chart-meta">--</p>
+            <div id="history-chart"></div>
+            <button class="table-toggle" type="button" data-table="history-table" aria-expanded="false">
+              Ver como tabela
+            </button>
+            <div id="history-table" hidden></div>
           </div>
+        </article>
+      </section>
 
-          <div class="topbar__controls">
-            <label class="search-field" for="lead-search">
-              <span>Busca</span>
-              <input
-                id="lead-search"
-                type="search"
-                placeholder="Buscar empresa ou contato"
-                autocomplete="off"
-              />
-            </label>
-
-            <label class="period-field" for="week-select">
-              <span>Período</span>
-              <select id="week-select"></select>
-            </label>
-
-            <div class="meta-cluster">
-              <button class="ghost-button" id="refresh-all" type="button">Atualizar dados</button>
-              <div class="meta-pill">
-                <span class="meta-pill__value" id="stat-alerts">--</span>
-                <span class="meta-pill__label">alertas</span>
-              </div>
-              <div class="user-chip">
-                <span class="user-chip__avatar">LB</span>
-                <div>
-                  <strong>Leandro Baldan</strong>
-                  <p>Consultor</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <section class="status-strip" aria-live="polite">
-          <div class="status-indicator">
-            <span class="status-indicator__dot"></span>
-            <span id="last-updated">Atualizado agora</span>
-          </div>
-          <p class="status-message" id="dashboard-status">
-            Dashboard pronto para análise.
-          </p>
-        </section>
-
-        <section class="kpi-row" id="secao-visao-geral">
-          <button class="kpi-card" id="kpi-leads" data-focus="all" type="button">
-            <span class="kpi-card__label">Leads ativos</span>
-            <strong class="kpi-card__value" id="stat-leads">--</strong>
-            <span class="kpi-card__delta" id="stat-leads-delta">--</span>
-          </button>
-
-          <button class="kpi-card" id="kpi-followups" data-focus="urgent" type="button">
-            <span class="kpi-card__label">Ações na janela</span>
-            <strong class="kpi-card__value" id="stat-followups">--</strong>
-            <span class="kpi-card__delta" id="stat-followups-delta">--</span>
-          </button>
-
-          <button class="kpi-card" id="kpi-interactions" data-focus="rich" type="button">
-            <span class="kpi-card__label">Interações registradas</span>
-            <strong class="kpi-card__value" id="stat-interactions">--</strong>
-            <span class="kpi-card__delta" id="stat-interactions-delta">--</span>
-          </button>
-
-          <button class="kpi-card" id="kpi-converted" data-focus="converted" type="button">
-            <span class="kpi-card__label">Prospects convertidos</span>
-            <strong class="kpi-card__value" id="stat-converted">--</strong>
-            <span class="kpi-card__delta" id="stat-converted-delta">--</span>
-          </button>
-        </section>
-
-        <section class="hero-grid">
-          <article class="panel panel--feature">
-            <div class="panel__header">
-              <div>
-                <p class="panel__eyebrow">Resumo executivo</p>
-                <h2>O que está acontecendo agora</h2>
-              </div>
-              <span class="tag tag--info" id="summary-tag">Em leitura</span>
-            </div>
-
-            <div class="feature-story">
-              <div class="feature-story__main">
-                <strong class="feature-story__headline" id="feature-headline">
-                  Carregando destaque principal...
-                </strong>
-                <p class="feature-story__text" id="feature-text">
-                  Assim que os dados chegarem, esta área resume o principal movimento do funil.
-                </p>
-              </div>
-
-              <div class="feature-story__chart">
-                <div class="feature-story__axis" id="pipeline-strip"></div>
-                <p class="feature-story__legend">
-                  Comparação visual entre volume por etapa, pressão de follow-up e profundidade do
-                  histórico.
-                </p>
-              </div>
-            </div>
-          </article>
-
-          <aside class="panel panel--insights">
-            <div class="panel__header">
-              <div>
-                <p class="panel__eyebrow">Principais movimentos</p>
-                <h2>Insights e alertas</h2>
-              </div>
-            </div>
-
-            <div class="insight-list" id="insight-list"></div>
-          </aside>
-        </section>
-
-        <section class="workspace-grid">
-          <section class="panel panel--pipeline" id="secao-pipeline">
-            <div class="panel__header">
-              <div>
-                <p class="panel__eyebrow">Tela principal</p>
-                <h2>Pipeline comercial</h2>
-              </div>
-              <p class="panel__meta" id="pipeline-total">Carregando...</p>
-            </div>
-
+      <!-- ================= PIPELINE + DETALHE ================= -->
+      <section class="grid grid--sidebar">
+        <article class="panel">
+          <h2 class="panel__tab">Pipeline comercial</h2>
+          <div class="panel__body">
             <div class="toolbar">
-              <label class="toolbar-field" for="focus-filter">
+              <label class="field" for="focus-filter">
                 <span>Foco</span>
                 <select id="focus-filter">
                   <option value="all">Todas as oportunidades</option>
@@ -187,103 +119,32 @@
                   <option value="no_date">Sem próxima ação definida</option>
                 </select>
               </label>
-
-              <div class="toolbar-tags" id="active-filters">
-                <span class="tag">Sem filtros ativos</span>
-              </div>
+              <p class="panel__meta" id="pipeline-total" style="margin: 0">--</p>
             </div>
 
-            <div class="pipeline-board" id="pipeline-board" aria-live="polite"></div>
-          </section>
-
-          <aside class="panel panel--detail" id="secao-lead">
-            <div class="panel__header">
-              <div>
-                <p class="panel__eyebrow">Drill-down do lead</p>
-                <h2 id="lead-detail-title">Selecione um lead</h2>
-              </div>
-              <span class="tag tag--warning" id="lead-detail-stage">Pipeline</span>
-            </div>
-
-            <div class="detail-actions">
-              <button class="ghost-button action-button" data-action="relatorio" type="button">
-                Ver relatório
-              </button>
-              <button class="ghost-button action-button" data-action="comparar" type="button">
-                Comparar
-              </button>
-              <button class="ghost-button action-button" data-action="investigar" type="button">
-                Investigar
-              </button>
-            </div>
-
-            <div class="lead-detail empty-state" id="lead-detail">
-              Clique em um card do pipeline para abrir contexto, próxima ação e histórico.
-            </div>
-          </aside>
-        </section>
-
-        <section class="bottom-grid">
-          <section class="panel panel--prospecting" id="secao-prospeccao">
-            <div class="panel__header">
-              <div>
-                <p class="panel__eyebrow">Módulo de prospecção</p>
-                <h2>Cadência semanal e meta</h2>
-              </div>
-              <p class="panel__meta" id="selected-week-label">--</p>
-            </div>
-
-            <div class="prospecting-overview">
-              <section class="subpanel">
-                <div class="subpanel__header">
-                  <h3>KPIs da semana</h3>
-                  <span>Comparado com a meta</span>
-                </div>
-                <div class="weekly-kpis" id="weekly-kpis"></div>
-                <div class="bars" id="weekly-bars"></div>
-              </section>
-
-              <section class="subpanel">
-                <div class="subpanel__header">
-                  <h3>Seis semanas de operação</h3>
-                  <span>Anotação editorial por semana</span>
-                </div>
-                <div class="history-chart" id="history-chart"></div>
-              </section>
-            </div>
-          </section>
-
-          <aside class="panel panel--activity" id="secao-relatorios">
-            <div class="panel__header">
-              <div>
-                <p class="panel__eyebrow">O que fazer agora</p>
-                <h2>Atividade recente</h2>
-              </div>
-            </div>
-
-            <div class="activity-feed" id="activity-feed"></div>
-          </aside>
-        </section>
-
-        <section class="panel panel--conversion" id="secao-conversao">
-          <div class="panel__header">
-            <div>
-              <p class="panel__eyebrow">Integração entre módulos</p>
-              <h2>Converter prospect em lead</h2>
-            </div>
-            <p class="panel__meta" id="conversion-count">--</p>
+            <div class="board" id="pipeline-board" aria-live="polite"></div>
           </div>
+        </article>
 
-          <div class="conversion-layout">
-            <div class="prospect-list" id="prospect-list"></div>
+        <article class="panel">
+          <h2 class="panel__tab">Detalhe do lead</h2>
+          <div class="panel__body" id="lead-detail">
+            <p class="empty">Clique em um card do pipeline para ver contexto, próxima ação e histórico.</p>
+          </div>
+        </article>
+      </section>
 
-            <section class="conversion-panel">
-              <div class="subpanel__header">
-                <h3>Formulário de conversão</h3>
-                <span>Sem recadastro</span>
-              </div>
+      <!-- ================= CONVERSÃO + ATIVIDADE ================= -->
+      <section class="grid grid--sidebar">
+        <article class="panel">
+          <h2 class="panel__tab">Converter prospect em lead</h2>
+          <div class="panel__body">
+            <p class="panel__meta" id="conversion-count">--</p>
 
-              <form class="conversion-form" id="conversion-form">
+            <div class="grid" style="grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px">
+              <div class="prospect-list" id="prospect-list"></div>
+
+              <form class="form" id="conversion-form">
                 <label>
                   <span>Prospect selecionado</span>
                   <input id="convert-company" type="text" disabled />
@@ -301,40 +162,31 @@
                   <input id="convert-email" name="email" type="email" />
                 </label>
                 <label>
-                  <span>Notas do lead</span>
-                  <textarea id="convert-notes" name="notes" rows="5"></textarea>
+                  <span>Notas</span>
+                  <textarea id="convert-notes" name="notes" rows="3"></textarea>
                 </label>
-                <div class="form-actions">
-                  <button class="primary-button" id="convert-submit" type="submit" disabled>
-                    Converter agora
+                <div class="form__actions">
+                  <button class="button button--primary" id="convert-submit" type="submit" disabled>
+                    Converter
                   </button>
-                  <button class="ghost-button" id="convert-clear" type="button">
-                    Limpar seleção
-                  </button>
+                  <button class="button" id="convert-clear" type="button">Limpar</button>
                 </div>
-                <p class="form-feedback" id="conversion-feedback"></p>
+                <p class="form__feedback" id="conversion-feedback"></p>
               </form>
-            </section>
+            </div>
           </div>
-        </section>
-      </main>
-    </div>
+        </article>
 
-    <template id="lead-card-template">
-      <button class="lead-card" type="button">
-        <div class="lead-card__head">
-          <span class="lead-card__marker"></span>
-          <span class="lead-card__count"></span>
-        </div>
-        <strong class="lead-card__company"></strong>
-        <p class="lead-card__contact"></p>
-        <p class="lead-card__action"></p>
-        <div class="lead-card__footer">
-          <span class="lead-card__source"></span>
-          <span class="lead-card__date"></span>
-        </div>
-      </button>
-    </template>
+        <article class="panel">
+          <h2 class="panel__tab">Atividade recente</h2>
+          <div class="panel__body">
+            <div class="feed" id="activity-feed"></div>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <div class="tooltip" id="tooltip" role="tooltip" aria-hidden="true"></div>
 
     <script src="/static/app.js" defer></script>
   </body>
