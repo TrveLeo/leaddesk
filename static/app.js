@@ -552,9 +552,12 @@ function renderHistoryChart() {
     return;
   }
 
+  // Contactados não entra aqui: `contactado + convertido` é fixo na meta
+  // semanal, então a série sairia numa reta e não diria nada. Convertidos e
+  // descartados são o par que se move — e em direções opostas.
   const series = [
-    { name: "Contactados", color: SERIES.s1, get: (r) => r.contactado + r.convertido },
-    { name: "Convertidos", color: SERIES.s2, get: (r) => r.convertido },
+    { name: "Convertidos", color: SERIES.s1, get: (r) => r.convertido },
+    { name: "Descartados", color: SERIES.s2, get: (r) => r.descartado },
   ];
 
   const width = host.clientWidth || 380;
@@ -572,7 +575,7 @@ function renderHistoryChart() {
     class: "chart",
     viewBox: `0 0 ${width} ${height}`,
     role: "img",
-    "aria-label": `Contactados e convertidos nas últimas ${rows.length} semanas.`,
+    "aria-label": `Convertidos e descartados nas últimas ${rows.length} semanas.`,
   });
 
   ticks.forEach((tick) => {
@@ -662,8 +665,8 @@ function renderHistoryChart() {
   );
 
   q("#history-table").innerHTML = buildTable(
-    ["Semana", "Contactados", "Convertidos"],
-    rows.map((r) => [formatDate(r.week), r.contactado + r.convertido, r.convertido]),
+    ["Semana", "Convertidos", "Descartados"],
+    rows.map((r) => [formatDate(r.week), r.convertido, r.descartado]),
   );
 }
 

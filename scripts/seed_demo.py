@@ -35,15 +35,75 @@ SEED = 20260729
 SEMANAS = 6
 POR_SEMANA = 20
 
-# Cota de status por semana. Soma 20 — a meta semanal de prospects pesquisados.
-# `contactado` + `convertido` = 10, que é exatamente a meta de contatos.
-COTA_SEMANAL = {
-    ProspectStatus.descartado: 5,
-    ProspectStatus.pesquisando: 2,
-    ProspectStatus.qualificado: 3,
-    ProspectStatus.contactado: 7,
-    ProspectStatus.convertido: 3,
-}
+# Meta semanal de contatos do plano. Espelha `WeeklyStats.meta_contactadas`.
+META_CONTATOS = 10
+
+# Cota de status semana a semana, da mais antiga para a mais recente.
+#
+# Cada linha soma 20 — a meta semanal de pesquisados —, e `contactado` +
+# `convertido` = 10 em todas, que é a meta de contatos. Os totais das seis
+# semanas são os do GABARITO: 12 pesquisando, 18 qualificado, 42 contactado,
+# 18 convertido, 30 descartado.
+#
+# As cotas variam de propósito. Uma tabela idêntica nas seis semanas produzia
+# séries perfeitamente planas no gráfico de histórico — tecnicamente correto e
+# inútil como demonstração, porque o painel de evolução não mostrava evolução
+# nenhuma. A progressão aqui é a de uma operação que aprende: descarte caindo
+# (6 → 4), qualificação e conversão subindo (2 → 4), cadência de contato
+# mantida na meta o tempo todo.
+COTA_POR_SEMANA = [
+    {
+        ProspectStatus.descartado: 6,
+        ProspectStatus.pesquisando: 2,
+        ProspectStatus.qualificado: 2,
+        ProspectStatus.contactado: 8,
+        ProspectStatus.convertido: 2,
+    },
+    {
+        ProspectStatus.descartado: 6,
+        ProspectStatus.pesquisando: 2,
+        ProspectStatus.qualificado: 2,
+        ProspectStatus.contactado: 8,
+        ProspectStatus.convertido: 2,
+    },
+    {
+        ProspectStatus.descartado: 5,
+        ProspectStatus.pesquisando: 2,
+        ProspectStatus.qualificado: 3,
+        ProspectStatus.contactado: 7,
+        ProspectStatus.convertido: 3,
+    },
+    {
+        ProspectStatus.descartado: 5,
+        ProspectStatus.pesquisando: 2,
+        ProspectStatus.qualificado: 3,
+        ProspectStatus.contactado: 7,
+        ProspectStatus.convertido: 3,
+    },
+    {
+        ProspectStatus.descartado: 4,
+        ProspectStatus.pesquisando: 2,
+        ProspectStatus.qualificado: 4,
+        ProspectStatus.contactado: 6,
+        ProspectStatus.convertido: 4,
+    },
+    {
+        ProspectStatus.descartado: 4,
+        ProspectStatus.pesquisando: 2,
+        ProspectStatus.qualificado: 4,
+        ProspectStatus.contactado: 6,
+        ProspectStatus.convertido: 4,
+    },
+]
+
+# Guarda de coerência: se alguém mexer numa linha e esquecer de compensar em
+# outra, o erro aparece na importação do módulo, não num teste distante.
+assert len(COTA_POR_SEMANA) == SEMANAS
+assert all(sum(cota.values()) == POR_SEMANA for cota in COTA_POR_SEMANA)
+assert all(
+    cota[ProspectStatus.contactado] + cota[ProspectStatus.convertido] == META_CONTATOS
+    for cota in COTA_POR_SEMANA
+)
 
 # Leads que não vieram da prospecção ativa — entraram por indicação e redes.
 LEADS_DE_OUTROS_CANAIS = 6
@@ -236,7 +296,7 @@ def semear(db: Session, hoje: date | None = None) -> dict[str, int]:
         semana = segunda_atual - timedelta(weeks=SEMANAS - 1 - indice_semana)
 
         status_da_semana: list[ProspectStatus] = []
-        for status, quantidade in COTA_SEMANAL.items():
+        for status, quantidade in COTA_POR_SEMANA[indice_semana].items():
             status_da_semana.extend([status] * quantidade)
         rng.shuffle(status_da_semana)
 

@@ -29,16 +29,23 @@ contatados — o dataset a cumpre em **todas** as seis semanas, por construção
 
 ## Funil de prospecção
 
-| Status | Qtd | Por semana |
-|---|---|---|
-| Pesquisando | 12 | 2 |
-| Qualificado | 18 | 3 |
-| Contactado | 42 | 7 |
-| Convertido em lead | 18 | 3 |
-| Descartado | 30 | 5 |
-| **Total** | **120** | **20** |
+| Status | Total | S1 | S2 | S3 | S4 | S5 | S6 |
+|---|---|---|---|---|---|---|---|
+| Pesquisando | 12 | 2 | 2 | 2 | 2 | 2 | 2 |
+| Qualificado | 18 | 2 | 2 | 3 | 3 | 4 | 4 |
+| Contactado | 42 | 8 | 8 | 7 | 7 | 6 | 6 |
+| Convertido em lead | 18 | 2 | 2 | 3 | 3 | 4 | 4 |
+| Descartado | 30 | 6 | 6 | 5 | 5 | 4 | 4 |
+| **Total** | **120** | **20** | **20** | **20** | **20** | **20** | **20** |
 
-`contactado + convertido = 10` por semana: a meta de contatos, batida na régua.
+`contactado + convertido = 10` em **todas** as semanas: a meta de contatos,
+batida na régua. Esse é o número que fica fixo — os demais variam de propósito.
+
+A progressão é a de uma operação que aprende: descarte caindo de 6 para 4,
+qualificação e conversão subindo de 2 para 4, cadência de contato mantida na
+meta o tempo todo. Cotas idênticas nas seis semanas seriam mais simples, mas
+deixavam o painel de evolução do dashboard como duas retas — tecnicamente
+corretas e inúteis como demonstração.
 
 ## As três taxas do case
 
@@ -115,7 +122,7 @@ data futura e os 3 sem data ficam de fora.
 
 ## Cobertura
 
-A suíte tem **154 testes** e cobre **100%** de `crm/`, `prospecting/` e
+A suíte tem **199 testes** e cobre **100%** de `crm/`, `prospecting/` e
 `main.py` (493 linhas), mais 99% de `scripts/seed_demo.py` — a única linha de
 fora é o `if __name__ == "__main__"`.
 
