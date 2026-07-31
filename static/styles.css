@@ -223,9 +223,23 @@ textarea {
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
 }
 
+/* Lista + formulário lado a lado. Colapsa antes dos outros: são dois blocos
+   de conteúdo denso, e a 400px duas colunas deixavam o formulário com 144px
+   de largura, estourando a página na horizontal. */
+.grid--split {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+}
+
 @media (max-width: 1180px) {
   .grid--3,
   .grid--sidebar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .grid--split {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -551,6 +565,15 @@ textarea {
   border: 0;
   background: transparent;
   outline: none;
+  /* `select` tem largura mínima intrínseca pelo conteúdo da maior opção. Sem
+     isto a barra de filtros não encolhe e vaza da tela em viewport estreito. */
+  min-width: 0;
+  max-width: 100%;
+}
+
+.field {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .board {
